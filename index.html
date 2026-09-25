@@ -1,333 +1,247 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Watch 2 Earn India</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch2Earn India</title>
+  
   <!-- Telegram Web App SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <!-- Adsgram SDK -->
-  <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <!-- Firebase App & Database (v9 Compatibility Mode) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
-    :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
-      --text-color: #ffffff;
-      --accent-color: #22c55e;
-    }
-
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--bg-color);
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-      color: var(--text-color);
-      padding: 15px;
     }
-
-    .header-card {
-      background: var(--card-bg);
-      padding: 15px;
-      border-radius: 12px;
+    body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: #1e293b;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      margin-bottom: 16px;
       text-align: center;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     }
-
-    .balance {
+    .profile-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+    .user-name {
       font-size: 24px;
       font-weight: bold;
-      color: var(--accent-color);
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+    .balance {
+      font-size: 32px;
+      font-weight: 800;
+      color: #22c55e;
       margin: 10px 0;
     }
-
-    .nav-buttons {
-      display: flex;
-      justify-content: space-around;
-      margin-bottom: 20px;
+    .phone-info {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 14px;
     }
-
-    .nav-btn {
-      background: #3b82f6;
-      color: white;
+    .share-btn {
+      background: #2563eb;
+      color: #ffffff;
       border: none;
-      padding: 10px 15px;
+      padding: 10px 18px;
       border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
       cursor: pointer;
-      font-weight: bold;
+      transition: background 0.2s;
     }
-
-    .section {
-      display: none;
+    .share-btn:hover {
+      background: #1d4ed8;
     }
-
-    .section.active {
-      display: block;
-    }
-
-    .grid-container {
+    .tasks-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 420px;
     }
-
     .task-card {
-      background: var(--card-bg);
-      padding: 12px;
-      border-radius: 8px;
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 16px;
       text-align: center;
       border: 1px solid #334155;
     }
-
-    .task-btn {
-      background: var(--accent-color);
-      color: white;
+    .task-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+    .reward {
+      font-size: 14px;
+      color: #38bdf8;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+    .watch-btn {
+      background: #16a34a;
+      color: #ffffff;
       border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
+      width: 100%;
+      padding: 10px 0;
+      border-radius: 8px;
+      font-weight: bold;
       cursor: pointer;
-      width: 100%;
-      margin-top: 5px;
+      transition: background 0.2s;
     }
-
-    .task-btn:disabled {
-      background: #64748b;
+    .watch-btn:disabled {
+      background: #475569;
       cursor: not-allowed;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 6px;
-      border: 1px solid #334155;
-      background: #0f172a;
-      color: white;
-      box-sizing: border-box;
     }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
-  <div class="header-card">
-    <h2 id="userName">User</h2>
-    <div class="balance">Balance: ₹<span id="userBalance">0.00</span></div>
-    <p id="phoneStatus" style="font-size: 12px; color: #94a3b8;">Phone Number: Not Linked</p>
-    <button class="nav-btn" onclick="requestContact()" id="contactBtn">📱 Share Phone Number</button>
-  </div>
-
-  <!-- Navigation -->
-  <div class="nav-buttons">
-    <button class="nav-btn" onclick="showSection('tasks')">Video Tasks</button>
-    <button class="nav-btn" onclick="showSection('withdraw')">Withdraw (INR)</button>
-    <button class="nav-btn" onclick="showSection('settings')">Settings</button>
+  <!-- Profile Card -->
+  <div class="card">
+    <div class="profile-title">Watch2Earn India</div>
+    <div class="user-name" id="user-name">User</div>
+    <div class="balance" id="user-balance">Balance: ₹0.00</div>
+    <div class="phone-info" id="phone-info">Phone Number: Not Linked</div>
+    <button class="share-btn" id="phone-btn" onclick="requestPhoneNumber()">📱 Share Phone Number</button>
   </div>
 
   <!-- Tasks Section -->
-  <div id="tasks" class="section active">
-    <h3>Watch Videos & Earn (100 Tasks)</h3>
-    <div class="grid-container" id="tasksGrid"></div>
-  </div>
-
-  <!-- Withdraw Section -->
-  <div id="withdraw" class="section">
-    <div class="header-card">
-      <h3>Withdraw Funds (INR)</h3>
-      <select id="paymentMethod">
-        <option value="UPI">UPI (Google Pay / PhonePe / Paytm)</option>
-        <option value="Bank">Bank Transfer</option>
-      </select>
-      <input type="text" id="accountDetails" placeholder="Enter UPI ID or Bank Details" />
-      <input type="number" id="withdrawAmount" placeholder="Amount (Minimum ₹100)" />
-      <button class="task-btn" onclick="processWithdrawal()">Submit Request</button>
-    </div>
-  </div>
-
-  <!-- Settings Section -->
-  <div id="settings" class="section">
-    <div class="header-card">
-      <h3>Theme & Background Settings</h3>
-      <p style="font-size: 14px;">Upload custom background image:</p>
-      <input type="file" id="bgUploader" accept="image/*" onchange="changeBackground(event)" />
-    </div>
+  <div class="tasks-grid" id="tasks-container">
+    <!-- Tasks will be generated dynamically -->
   </div>
 
   <script>
-    // --- 1. NEW FIREBASE CONFIGURATION ---
+    // 1. Initialize Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    // 2. Firebase Configuration
     const firebaseConfig = {
-      apiKey: "AIzaSyD4htmL_UZWJSlGRCZ5Bc2OoKWBQDqjAtU",
+      apiKey: "AIzaSyDummyKeyForTemplate",
       authDomain: "watch2earn-india-17633.firebaseapp.com",
       databaseURL: "https://watch2earn-india-17633-default-rtdb.firebaseio.com",
       projectId: "watch2earn-india-17633",
-      storageBucket: "watch2earn-india-17633.firebasestorage.app",
-      messagingSenderId: "85651793395",
-      appId: "1:85651793395:web:94c70f839d945b64d45e86",
-      measurementId: "G-KWSM39PPMP"
+      storageBucket: "watch2earn-india-17633.appspot.com",
+      messagingSenderId: "1234567890",
+      appId: "1:1234567890:web:abcdef123456"
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // --- 2. TELEGRAM INIT ---
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    // User details from Telegram
+    const tgUser = tg.initDataUnsafe?.user || { id: "test_user_123", first_name: "User" };
+    const userId = tgUser.id;
+    const userName = tgUser.first_name + (tgUser.last_name ? " " + tgUser.last_name : "");
 
-    const user = tg.initDataUnsafe?.user || { id: "test_user", first_name: "Test User" };
-    const userId = user.id;
+    // Adsterra Direct Link
+    const ADSTERRA_DIRECT_LINK = "https://www.profitableratecpmnetwork.com/gts70p4m?key=a78dc8da9a6143f469c74354c1340d60";
 
-    document.getElementById('userName').innerText = user.first_name + (user.last_name ? " " + user.last_name : "");
+    let currentBalance = 0.00;
 
-    let currentBalance = 0;
-    let phoneNumber = "";
+    // Load User Data from Firebase
+    document.getElementById("user-name").innerText = userName;
 
-    // --- 3. USER DATA SYNC ---
-    const userRef = db.ref('users/' + userId);
-    userRef.on('value', (snapshot) => {
+    const userRef = db.ref("users/" + userId);
+    userRef.on("value", (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        currentBalance = data.balance || 0;
-        phoneNumber = data.phone || "";
-        document.getElementById('userBalance').innerText = currentBalance.toFixed(2);
-        if(phoneNumber) {
-          document.getElementById('phoneStatus').innerText = "Phone Number: " + phoneNumber;
-          document.getElementById('contactBtn').style.display = "none";
+        currentBalance = data.balance || 0.00;
+        document.getElementById("user-balance").innerText = `Balance: ₹${currentBalance.toFixed(2)}`;
+        
+        if (data.phone) {
+          document.getElementById("phone-info").innerText = `Phone Number: ${data.phone}`;
+          document.getElementById("phone-btn").style.display = "none";
         }
       } else {
+        // Create initial record
         userRef.set({
-          name: user.first_name,
-          username: user.username || "",
-          balance: 0,
-          phone: ""
+          name: userName,
+          balance: 0.00,
+          joined: new Date().toISOString()
         });
       }
     });
 
-    // --- 4. REQUEST CONTACT ---
-    function requestContact() {
-      tg.requestContact((granted, response) => {
-        if (granted && response?.responseUnsafe?.contact) {
-          const contact = response.responseUnsafe.contact;
-          phoneNumber = contact.phone_number;
-          userRef.update({ phone: phoneNumber });
-          alert("Phone number saved successfully!");
-        } else {
-          alert("Phone number sharing failed.");
+    // Request Phone Number via Telegram
+    function requestPhoneNumber() {
+      tg.requestContact((sent, response) => {
+        if (sent) {
+          const phone = response?.responseUnsafe?.contact?.phone_number;
+          if (phone) {
+            userRef.update({ phone: phone });
+            document.getElementById("phone-info").innerText = `Phone Number: ${phone}`;
+            document.getElementById("phone-btn").style.display = "none";
+          }
         }
       });
     }
 
-    // --- 5. GENERATE 100 TASKS ---
-    const tasksGrid = document.getElementById('tasksGrid');
-    for (let i = 1; i <= 100; i++) {
-      const card = document.createElement('div');
-      card.className = 'task-card';
-      card.innerHTML = `
-        <h4>Video #${i}</h4>
-        <p>Reward: ₹1.00</p>
-        <button class="task-btn" id="task-btn-${i}" onclick="startTask(${i})">Watch</button>
+    // Generate 10 Video Tasks
+    const tasksContainer = document.getElementById("tasks-container");
+    for (let i = 1; i <= 10; i++) {
+      const taskCard = document.createElement("div");
+      taskCard.className = "task-card";
+      taskCard.innerHTML = `
+        <div class="task-title">Video #${i}</div>
+        <div class="reward">Reward: ₹1.00</div>
+        <button class="watch-btn" id="task-btn-${i}" onclick="startTask(${i})">Watch</button>
       `;
-      tasksGrid.appendChild(card);
+      tasksContainer.appendChild(taskCard);
     }
 
-    // --- 6. ADSGRAM & TIMER LOGIC ---
-    const AdController = window.Adsgram?.init({ blockId: "49810" });
-
+    // Start Task & Redirect to Adsterra
     function startTask(taskId) {
       const btn = document.getElementById(`task-btn-${taskId}`);
       
-      if(AdController) {
-        AdController.show().then((result) => {
-          runTimer(btn, taskId);
-        }).catch((err) => {
-          alert("Failed to load ad. Please try again.");
-        });
+      // 1. Open Adsterra Direct Link
+      if (tg.openLink) {
+        tg.openLink(ADSTERRA_DIRECT_LINK);
       } else {
-        // Fallback / Test Mode
-        runTimer(btn, taskId);
+        window.open(ADSTERRA_DIRECT_LINK, "_blank");
       }
-    }
 
-    function runTimer(btn, taskId) {
+      // 2. Start 30 Seconds Countdown Timer
       let timeLeft = 30;
       btn.disabled = true;
-
+      
       const timer = setInterval(() => {
-        if (document.hidden) return;
-
+        btn.innerText = `Wait ${timeLeft}s`;
         timeLeft--;
-        btn.innerText = `${timeLeft}s...`;
 
-        if (timeLeft <= 0) {
+        if (timeLeft < 0) {
           clearInterval(timer);
-          btn.innerText = "Completed ✔";
-          addReward(1.00);
+          btn.innerText = "Completed ✓";
+          
+          // Add Reward ₹1.00 to Firebase
+          currentBalance += 1.00;
+          userRef.update({ balance: currentBalance });
         }
       }, 1000);
-    }
-
-    function addReward(amount) {
-      currentBalance += amount;
-      userRef.update({ balance: currentBalance });
-      alert(`Congratulations! You earned ₹${amount}`);
-    }
-
-    // --- 7. WITHDRAWAL LOGIC ---
-    function processWithdrawal() {
-      const method = document.getElementById('paymentMethod').value;
-      const details = document.getElementById('accountDetails').value;
-      const amount = parseFloat(document.getElementById('withdrawAmount').value);
-
-      if (!details) {
-        alert("Please enter your account details.");
-        return;
-      }
-      if (isNaN(amount) || amount < 100) {
-        alert("Minimum withdrawal amount is ₹100");
-        return;
-      }
-      if (amount > currentBalance) {
-        alert("Insufficient balance in your wallet.");
-        return;
-      }
-
-      db.ref('withdrawals/').push({
-        userId: userId,
-        name: user.first_name,
-        phone: phoneNumber,
-        method: method,
-        details: details,
-        amount: amount,
-        status: "Pending",
-        timestamp: Date.now()
-      });
-
-      userRef.update({ balance: currentBalance - amount });
-      alert("Withdrawal request submitted successfully!");
-    }
-
-    // --- 8. SETTINGS & CUSTOM BACKGROUND ---
-    function changeBackground(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          document.body.style.backgroundImage = `url('${e.target.result}')`;
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-
-    // --- NAVIGATION HELPERS ---
-    function showSection(id) {
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
     }
   </script>
 </body>
