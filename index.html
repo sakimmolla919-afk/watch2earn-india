@@ -162,13 +162,14 @@
   <script>
     // --- 1. FIREBASE CONFIGURATION ---
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-      projectId: "YOUR_PROJECT",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyBTElaSqofO09oYUBKSvWnYJuiEr6n5SEg",
+      authDomain: "telegram-earn-app-bf23c.firebaseapp.com",
+      databaseURL: "https://telegram-earn-app-bf23c-default-rtdb.firebaseio.com",
+      projectId: "telegram-earn-app-bf23c",
+      storageBucket: "telegram-earn-app-bf23c.firebasestorage.app",
+      messagingSenderId: "314288083027",
+      appId: "1:314288083027:web:d0a401c3f3a7617969b6a6",
+      measurementId: "G-392D9CCC1F"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -236,7 +237,6 @@
     }
 
     // --- 6. ADSGRAM & TIMER LOGIC ---
-    // Adsgram Block ID Integrated
     const AdController = window.Adsgram?.init({ blockId: "49810" });
 
     function startTask(taskId) {
@@ -244,7 +244,6 @@
       
       if(AdController) {
         AdController.show().then((result) => {
-          // Ad completed successfully
           runTimer(btn, taskId);
         }).catch((err) => {
           alert("Failed to load ad. Please try again.");
@@ -260,7 +259,6 @@
       btn.disabled = true;
 
       const timer = setInterval(() => {
-        // Anti-Cheat: Pause timer if page is hidden
         if (document.hidden) return;
 
         timeLeft--;
