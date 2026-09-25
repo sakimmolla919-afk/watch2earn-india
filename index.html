@@ -236,13 +236,15 @@
     }
 
     // --- 6. ADSGRAM & TIMER LOGIC ---
-    const AdController = window.Adsgram?.init({ blockId: "YOUR_ADSGRAM_BLOCK_ID" });
+    // Adsgram Block ID Integrated
+    const AdController = window.Adsgram?.init({ blockId: "49810" });
 
     function startTask(taskId) {
       const btn = document.getElementById(`task-btn-${taskId}`);
       
       if(AdController) {
-        AdController.show().then(() => {
+        AdController.show().then((result) => {
+          // Ad completed successfully
           runTimer(btn, taskId);
         }).catch((err) => {
           alert("Failed to load ad. Please try again.");
