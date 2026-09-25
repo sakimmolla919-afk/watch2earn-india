@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Watch 2 Earn India</title>
+  <!-- Telegram Web App SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Adsgram SDK -->
+  <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-color: #ffffff;
+      --accent-color: #22c55e;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: var(--text-color);
+      padding: 15px;
+    }
+
+    .header-card {
+      background: var(--card-bg);
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+
+    .balance {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--accent-color);
+      margin: 10px 0;
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+    }
+
+    .nav-btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .task-card {
+      background: var(--card-bg);
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px solid #334155;
+    }
+
+    .task-btn {
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 5px;
+    }
+
+    .task-btn:disabled {
+      background: #64748b;
+      cursor: not-allowed;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: white;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header-card">
+    <h2 id="userName">User</h2>
+    <div class="balance">Balance: ₹<span id="userBalance">0.00</span></div>
+    <p id="phoneStatus" style="font-size: 12px; color: #94a3b8;">Phone Number: Not Linked</p>
+    <button class="nav-btn" onclick="requestContact()" id="contactBtn">📱 Share Phone Number</button>
+  </div>
+
+  <!-- Navigation -->
+  <div class="nav-buttons">
+    <button class="nav-btn" onclick="showSection('tasks')">Video Tasks</button>
+    <button class="nav-btn" onclick="showSection('withdraw')">Withdraw (INR)</button>
+    <button class="nav-btn" onclick="showSection('settings')">Settings</button>
+  </div>
+
+  <!-- Tasks Section -->
+  <div id="tasks" class="section active">
+    <h3>Watch Videos & Earn (100 Tasks)</h3>
+    <div class="grid-container" id="tasksGrid"></div>
+  </div>
+
+  <!-- Withdraw Section -->
+  <div id="withdraw" class="section">
+    <div class="header-card">
+      <h3>Withdraw Funds (INR)</h3>
+      <select id="paymentMethod">
+        <option value="UPI">UPI (Google Pay / PhonePe / Paytm)</option>
+        <option value="Bank">Bank Transfer</option>
+      </select>
+      <input type="text" id="accountDetails" placeholder="Enter UPI ID or Bank Details" />
+      <input type="number" id="withdrawAmount" placeholder="Amount (Minimum ₹100)" />
+      <button class="task-btn" onclick="processWithdrawal()">Submit Request</button>
+    </div>
+  </div>
+
+  <!-- Settings Section -->
+  <div id="settings" class="section">
+    <div class="header-card">
+      <h3>Theme & Background Settings</h3>
+      <p style="font-size: 14px;">Upload custom background image:</p>
+      <input type="file" id="bgUploader" accept="image/*" onchange="changeBackground(event)" />
+    </div>
+  </div>
+
+  <script>
+    // --- 1. FIREBASE CONFIGURATION ---
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // --- 2. TELEGRAM INIT ---
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    const user = tg.initDataUnsafe?.user || { id: "test_user", first_name: "Test User" };
+    const userId = user.id;
+
+    document.getElementById('userName').innerText = user.first_name + (user.last_name ? " " + user.last_name : "");
+
+    let currentBalance = 0;
+    let phoneNumber = "";
+
+    // --- 3. USER DATA SYNC ---
+    const userRef = db.ref('users/' + userId);
+    userRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        currentBalance = data.balance || 0;
+        phoneNumber = data.phone || "";
+        document.getElementById('userBalance').innerText = currentBalance.toFixed(2);
+        if(phoneNumber) {
+          document.getElementById('phoneStatus').innerText = "Phone Number: " + phoneNumber;
+          document.getElementById('contactBtn').style.display = "none";
+        }
+      } else {
+        userRef.set({
+          name: user.first_name,
+          username: user.username || "",
+          balance: 0,
+          phone: ""
+        });
+      }
+    });
+
+    // --- 4. REQUEST CONTACT ---
+    function requestContact() {
+      tg.requestContact((granted, response) => {
+        if (granted && response?.responseUnsafe?.contact) {
+          const contact = response.responseUnsafe.contact;
+          phoneNumber = contact.phone_number;
+          userRef.update({ phone: phoneNumber });
+          alert("Phone number saved successfully!");
+        } else {
+          alert("Phone number sharing failed.");
+        }
+      });
+    }
+
+    // --- 5. GENERATE 100 TASKS ---
+    const tasksGrid = document.getElementById('tasksGrid');
+    for (let i = 1; i <= 100; i++) {
+      const card = document.createElement('div');
+      card.className = 'task-card';
+      card.innerHTML = `
+        <h4>Video #${i}</h4>
+        <p>Reward: ₹1.00</p>
+        <button class="task-btn" id="task-btn-${i}" onclick="startTask(${i})">Watch</button>
+      `;
+      tasksGrid.appendChild(card);
+    }
+
+    // --- 6. ADSGRAM & TIMER LOGIC ---
+    const AdController = window.Adsgram?.init({ blockId: "YOUR_ADSGRAM_BLOCK_ID" });
+
+    function startTask(taskId) {
+      const btn = document.getElementById(`task-btn-${taskId}`);
+      
+      if(AdController) {
+        AdController.show().then(() => {
+          runTimer(btn, taskId);
+        }).catch((err) => {
+          alert("Failed to load ad. Please try again.");
+        });
+      } else {
+        // Fallback / Test Mode
+        runTimer(btn, taskId);
+      }
+    }
+
+    function runTimer(btn, taskId) {
+      let timeLeft = 30;
+      btn.disabled = true;
+
+      const timer = setInterval(() => {
+        // Anti-Cheat: Pause timer if page is hidden
+        if (document.hidden) return;
+
+        timeLeft--;
+        btn.innerText = `${timeLeft}s...`;
+
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          btn.innerText = "Completed ✔";
+          addReward(1.00);
+        }
+      }, 1000);
+    }
+
+    function addReward(amount) {
+      currentBalance += amount;
+      userRef.update({ balance: currentBalance });
+      alert(`Congratulations! You earned ₹${amount}`);
+    }
+
+    // --- 7. WITHDRAWAL LOGIC ---
+    function processWithdrawal() {
+      const method = document.getElementById('paymentMethod').value;
+      const details = document.getElementById('accountDetails').value;
+      const amount = parseFloat(document.getElementById('withdrawAmount').value);
+
+      if (!details) {
+        alert("Please enter your account details.");
+        return;
+      }
+      if (isNaN(amount) || amount < 100) {
+        alert("Minimum withdrawal amount is ₹100");
+        return;
+      }
+      if (amount > currentBalance) {
+        alert("Insufficient balance in your wallet.");
+        return;
+      }
+
+      db.ref('withdrawals/').push({
+        userId: userId,
+        name: user.first_name,
+        phone: phoneNumber,
+        method: method,
+        details: details,
+        amount: amount,
+        status: "Pending",
+        timestamp: Date.now()
+      });
+
+      userRef.update({ balance: currentBalance - amount });
+      alert("Withdrawal request submitted successfully!");
+    }
+
+    // --- 8. SETTINGS & CUSTOM BACKGROUND ---
+    function changeBackground(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.body.style.backgroundImage = `url('${e.target.result}')`;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // --- NAVIGATION HELPERS ---
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+  </script>
+</body>
+</html>
