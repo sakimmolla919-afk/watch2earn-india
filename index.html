@@ -81,6 +81,26 @@
       border-radius: 8px;
       text-align: center;
       border: 1px solid #334155;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* --- ANIMATED EMOJI STYLE --- */
+    .animated-emoji {
+      font-size: 30px;
+      display: inline-block;
+      margin: 5px 0;
+      animation: bounce 1.2s infinite alternate ease-in-out;
+    }
+
+    /* Animation Keyframes for Emoji Movement */
+    @keyframes bounce {
+      0% {
+        transform: translateY(0) scale(1);
+      }
+      100% {
+        transform: translateY(-8px) scale(1.15);
+      }
     }
 
     .task-btn {
@@ -224,12 +244,13 @@
       });
     }
 
-    // --- 6. GENERATE 100 TASKS ---
+    // --- 6. GENERATE 100 TASKS WITH ANIMATED EMOJI ---
     const tasksGrid = document.getElementById('tasksGrid');
     for (let i = 1; i <= 100; i++) {
       const card = document.createElement('div');
       card.className = 'task-card';
       card.innerHTML = `
+        <div class="animated-emoji">😲</div>
         <h4>Video #${i}</h4>
         <p>Reward: ₹1.00</p>
         <button class="task-btn" id="task-btn-${i}" onclick="startTask(${i})">Watch</button>
@@ -241,14 +262,14 @@
     function startTask(taskId) {
       const btn = document.getElementById(`task-btn-${taskId}`);
       
-      // 1. Open Adsterra Direct Link
+      // Open Adsterra Direct Link
       if (tg.openLink) {
         tg.openLink(ADSTERRA_DIRECT_LINK);
       } else {
         window.open(ADSTERRA_DIRECT_LINK, "_blank");
       }
 
-      // 2. Start Countdown Timer
+      // Start Countdown Timer
       runTimer(btn, taskId);
     }
 
