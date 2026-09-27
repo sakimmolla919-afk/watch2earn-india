@@ -72,36 +72,38 @@
     .grid-container {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      gap: 12px;
     }
 
-    /* --- TASK CARD WITH CUSTOM BACKGROUND IMAGE --- */
+    /* --- TASK CARD WITH CUSTOM AVATAR BACKGROUND --- */
     .task-card {
       position: relative;
-      padding: 15px 12px;
-      border-radius: 10px;
+      padding: 15px 10px;
+      border-radius: 12px;
       text-align: center;
-      border: 1px solid #eab308;
+      border: 1.5px solid #f59e0b;
       overflow: hidden;
-      /* Background Image setup */
-      background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.65)), url('1000197177.png');
+      
+      /* আপনার ছবির সরাসরি URL এখানে বসান */
+      background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url('YOUR_IMAGE_URL_HERE');
       background-size: cover;
       background-position: center;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+      background-repeat: no-repeat;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
     }
 
     .task-card h4 {
-      margin: 5px 0;
+      margin: 4px 0;
       font-size: 18px;
       color: #ffffff;
-      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
     }
 
     .task-card p {
-      margin: 5px 0 10px 0;
+      margin: 4px 0 10px 0;
       font-weight: bold;
-      color: #facc15;
-      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+      color: #fbbf24;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
     }
 
     .task-btn {
@@ -113,7 +115,7 @@
       cursor: pointer;
       width: 100%;
       font-weight: bold;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
 
     .task-btn:disabled {
@@ -246,7 +248,7 @@
       });
     }
 
-    // --- 6. GENERATE 100 TASKS WITH CUSTOM BACKGROUND CARD ---
+    // --- 6. GENERATE 100 TASKS ---
     const tasksGrid = document.getElementById('tasksGrid');
     for (let i = 1; i <= 100; i++) {
       const card = document.createElement('div');
